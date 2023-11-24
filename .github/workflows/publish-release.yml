@@ -24,6 +24,12 @@ jobs:
             FILE: release/win/OpossumUI-for-win.exe
 
     steps:
+      - name: Initialize Energy Estimation
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          task: start-measurement
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -33,7 +39,21 @@ jobs:
 
       - run: yarn install --immutable
 
+      - name: Checkout and Installation Measurement
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          task: get-measurement
+          label: 'checkout and installation'
+
       - run: yarn ship:auto
+
+      - name: Build Release Measurement
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          task: get-measurement
+          label: 'build release'
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
@@ -44,3 +64,16 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: USER_GUIDE.md
+
+      - name: Upload Measurement
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          task: get-measurement
+          label: 'upload release'
+
+      - name: Show Energy Results
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        with:
+          task: display-results
+          pr-comment: true
