@@ -3,25 +3,22 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-name: Publish release
+name: Build and E2E Test
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
+      - 'renovate/*'
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
 
 jobs:
-  publish-release:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            FILE: release/linux/OpossumUI-for-linux.AppImage
-          - os: macos-latest
-            FILE: release/mac/OpossumUI-for-mac.zip
-          - os: windows-latest
-            FILE: release/win/OpossumUI-for-win.exe
+  green-metrics-e2e:
+    runs-on: ubuntu-latest
+    if: |
+      !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'renovate/'))
 
     steps:
       - name: Initialize Energy Estimation
@@ -48,40 +45,32 @@ jobs:
 
       - run: yarn ship:auto
 
-      - name: Build Release Measurement
+      - name: Build release Measurement
         uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
         if: matrix.os == 'ubuntu-latest'
         with:
           task: get-measurement
           label: 'build release'
 
-      - name: Upload release asset
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ${{ matrix.FILE }}
+      - run: ${{ matrix.E2E }}
 
-      - name: Upload user guide
-        uses: softprops/action-gh-release@v1
-        with:
-          files: USER_GUIDE.md
-
-      - name: Create SPDX document
-        run: yarn spdx
-
-      - name: Upload SPDX document
-        uses: softprops/action-gh-release@v1
-        with:
-          files: opossum-ui.spdx.json
-
-      - name: Upload Measurement
+      - name: E2E CI Measurement
         uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
         if: matrix.os == 'ubuntu-latest'
         with:
           task: get-measurement
-          label: 'upload release'
+          label: 'e2e ci test'
+
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: artifacts
+          path: src/e2e-tests/artifacts
+          retention-days: 30
 
       - name: Show Energy Results
         uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        if: matrix.os == 'ubuntu-latest'
         with:
           task: display-results
           pr-comment: true
