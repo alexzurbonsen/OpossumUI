@@ -3,73 +3,37 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-name: Build and E2E Test
+name: Green Metrics Tool - Build and E2E Test
 
 on:
-  push:
-    branches:
-      - main
-      - 'renovate/*'
-  pull_request:
-    types: [opened, reopened, synchronize]
   workflow_dispatch:
 
 jobs:
   green-metrics-e2e:
-    runs-on: ubuntu-latest
-    if: |
-      !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'renovate/'))
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Initialize Energy Estimation
-        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
-        if: matrix.os == 'ubuntu-latest'
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2
         with:
           task: start-measurement
 
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - name: Run Green Metrics Tool
+        uses: alexzurbonsen/green-metrics-tool-action@v1-beta
         with:
-          cache: 'yarn'
-          node-version: 20
-
-      - run: yarn install --immutable
-
-      - name: Checkout and Installation Measurement
-        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
-        if: matrix.os == 'ubuntu-latest'
-        with:
-          task: get-measurement
-          label: 'checkout and installation'
-
-      - run: yarn ship:auto
-
-      - name: Build release Measurement
-        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
-        if: matrix.os == 'ubuntu-latest'
-        with:
-          task: get-measurement
-          label: 'build release'
-
-      - run: ${{ matrix.E2E }}
+          metrics-to-turn-off: '--categories Machine Sensors Debug CGroupV2 MacOS'
+          measurement-name: 'first attempt'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: E2E CI Measurement
-        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2
         if: matrix.os == 'ubuntu-latest'
         with:
           task: get-measurement
           label: 'e2e ci test'
 
-      - uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: artifacts
-          path: src/e2e-tests/artifacts
-          retention-days: 30
-
       - name: Show Energy Results
-        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2
         if: matrix.os == 'ubuntu-latest'
         with:
           task: display-results
