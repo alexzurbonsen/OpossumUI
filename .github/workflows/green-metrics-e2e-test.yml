@@ -18,8 +18,8 @@ jobs:
         with:
           task: start-measurement
 
-      - name: Checkout Repo
-        uses: alexzurbonsen/green-metrics-tool-action@v1-beta
+      - name: Run GMT
+        uses: alexzurbonsen/green-metrics-tool-action@v0.0
         with:
           metrics-to-turn-off: '--categories Machine Sensors Debug CGroupV2 MacOS'
           measurement-name: 'first attempt'
