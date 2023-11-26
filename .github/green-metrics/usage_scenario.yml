@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: Meta Platforms, Inc. and its affiliates
+# SPDX-FileCopyrightText: TNG Technology Consulting GmbH <https://www.tngtech.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+name: Opossum E2E CI Tests
+author: Alexander zur Bonsen <alexander.zur.bonsen@tngtech.com>
+description: First attempt to measure Opossum with GMT
+architecture: Linux
+
+services:
+  opossum:
+    image: opossum
+
+flow:
+  - name: Run E2E Test vs. Release
+    container: opossum
+    commands:
+      - type: console
+        command: yarn test:e2e:ci

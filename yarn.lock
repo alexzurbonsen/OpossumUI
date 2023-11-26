@@ -9175,6 +9175,7 @@ __metadata:
     redux: "npm:^4.2.1"
     redux-thunk: "npm:^2.4.2"
     run-script-os: "npm:^1.1.6"
+    skip-postinstall: "npm:^1.0.0"
     spdx-license-ids: "npm:^3.0.16"
     start-server-and-test: "npm:^2.0.3"
     stream-json: "npm:^1.8.0"
@@ -10471,6 +10472,15 @@ __metadata:
   version: 1.0.5
   resolution: "sisteransi@npm:1.0.5"
   checksum: aba6438f46d2bfcef94cf112c835ab395172c75f67453fe05c340c770d3c402363018ae1ab4172a1026a90c47eaccf3af7b6ff6fa749a680c2929bd7fa2b37a4
+  languageName: node
+  linkType: hard
+
+"skip-postinstall@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "skip-postinstall@npm:1.0.0"
+  bin:
+    skip-postinstall: index.js
+  checksum: 44cd9b53c1486951d0460e22434ea5bdb99b80be45b29e4c6f247a24953ab12bb588abbe86da7ab2f18ac34b442d6d2ed438785b42fd51280f352c73134607aa
   languageName: node
   linkType: hard
 
