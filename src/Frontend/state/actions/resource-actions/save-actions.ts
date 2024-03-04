@@ -45,13 +45,22 @@ export function savePackageInfo(
 ): AppThunkAction {
   return (dispatch, getState) => {
     const strippedPackageInfo = getStrippedPackageInfo(packageInfo);
-    const matchedPackageInfo = Object.values(
-      getManualAttributions(getState()),
-    ).find(
-      (attribution) =>
+    const packageInfoWithoutModifiedPreferred = { ...strippedPackageInfo };
+    delete packageInfoWithoutModifiedPreferred.modifiedPreferred;
+    const res = getManualAttributions(getState());
+    const matchedPackageInfo = Object.values(res).find((attribution) => {
+      const strippedAttribution = getStrippedPackageInfo(attribution);
+      const attributionWithoutWasPreferred = { ...strippedAttribution };
+      delete attributionWithoutWasPreferred.wasPreferred;
+      return (
         (ignorePreSelected || !attribution.preSelected) &&
-        isEqual(getStrippedPackageInfo(attribution), strippedPackageInfo),
-    );
+        (isEqual(strippedAttribution, strippedPackageInfo) ||
+          isEqual(
+            attributionWithoutWasPreferred,
+            packageInfoWithoutModifiedPreferred,
+          ))
+      );
+    });
 
     if (attributionId && isEmpty(strippedPackageInfo)) {
       // DELETE
