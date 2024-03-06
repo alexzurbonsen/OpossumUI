@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: Meta Platforms, Inc. and its affiliates
+# SPDX-FileCopyrightText: TNG Technology Consulting GmbH <https://www.tngtech.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Green Metrics Tool - Build and E2E Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  green-metrics-e2e:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Initialize Energy Estimation
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2
+        with:
+          task: start-measurement
+
+      - name: Run Green Metrics Tool
+        uses: alexzurbonsen/green-metrics-tool-action@v1-beta
+        with:
+          metrics-to-turn-off: '--categories Machine Sensors Debug CGroupV2 MacOS'
+          measurement-name: 'first attempt'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: E2E CI Measurement
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          task: get-measurement
+          label: 'e2e ci test'
+
+      - name: Show Energy Results
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          task: display-results
+          pr-comment: true

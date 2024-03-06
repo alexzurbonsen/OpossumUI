@@ -33,6 +33,12 @@ jobs:
             E2E: yarn test:e2e:ci
 
     steps:
+      - name: Initialize Energy Estimation
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          task: start-measurement
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -42,11 +48,32 @@ jobs:
 
       - run: yarn install --immutable
 
+      - name: Checkout and Installation Measurement
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          task: get-measurement
+          label: 'checkout and installation'
+
       - run: yarn ship:auto
 
       - run: yarn spdx
 
+      - name: Build release Measurement
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          task: get-measurement
+          label: 'build release'
+
       - run: ${{ matrix.E2E }}
+
+      - name: E2E CI Measurement
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          task: get-measurement
+          label: 'e2e ci test'
 
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -54,3 +81,10 @@ jobs:
           name: artifacts
           path: src/e2e-tests/artifacts
           retention-days: 30
+
+      - name: Show Energy Results
+        uses: green-coding-berlin/eco-ci-energy-estimation@v2 # use hash or @vX here (See note below)
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          task: display-results
+          pr-comment: true
